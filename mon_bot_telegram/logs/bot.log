@@ -1,0 +1,5 @@
+2025-02-17 11:50:34,157 - TelegramBot - CRITICAL - Erreur lors de l'initialisation du bot: Expecting value: line 1 column 2 (char 1)
+2025-02-17 11:52:17,775 - TelegramBot - INFO - Migration 1 appliquée avec succès
+2025-02-17 11:52:17,776 - TelegramBot - INFO - Migration 2 appliquée avec succès
+2025-02-17 11:52:17,777 - TelegramBot - INFO - Migration 3 appliquée avec succès
+2025-02-17 11:52:17,778 - TelegramBot - INFO - Migration 4 appliquée avec succès
