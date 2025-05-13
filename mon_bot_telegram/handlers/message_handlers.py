@@ -8,6 +8,11 @@ from database.manager import DatabaseManager
 from utils.message_utils import PostType, MessageError
 from utils.validators import InputValidator
 
+# Constants
+MAIN_MENU = 0
+WAITING_TIMEZONE = 8
+WAITING_CHANNEL_INFO = 9
+
 logger = logging.getLogger(__name__)
 
 
@@ -215,3 +220,139 @@ async def handle_timezone(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         logger.error(f"Erreur inattendue: {str(e)}")
         await update.message.reply_text("❌ Une erreur inattendue s'est produite")
         return 8  # WAITING_TIMEZONE
+
+
+async def handle_timezone_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """
+    Gère l'entrée du fuseau horaire par l'utilisateur.
+    
+    Args:
+        update: L'objet Update de Telegram
+        context: Le contexte de la conversation
+        
+    Returns:
+        int: L'état suivant de la conversation
+    """
+    try:
+        user_input = update.message.text.strip()
+        user_id = update.effective_user.id
+    
+        try:
+            # Vérifier que le fuseau horaire est valide
+            import pytz
+            pytz.timezone(user_input)
+            
+            # Enregistrer le fuseau horaire dans la base de données
+            from database.manager import DatabaseManager
+            db_manager = DatabaseManager()
+            db_manager.save_user_timezone(user_id, user_input)
+            
+            # Confirmation à l'utilisateur
+            await update.message.reply_text(
+                f"✅ Votre fuseau horaire a été configuré sur : {user_input}",
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("↩️ Menu principal", callback_data="main_menu")
+                ]])
+            )
+            return MAIN_MENU
+
+        except pytz.exceptions.UnknownTimeZoneError:
+            # Fuseau horaire invalide
+            await update.message.reply_text(
+                "❌ Fuseau horaire invalide. Veuillez entrer un fuseau horaire valide (ex: Europe/Paris).",
+                reply_markup=InlineKeyboardMarkup([[
+                    InlineKeyboardButton("↩️ Annuler", callback_data="settings")
+                ]])
+            )
+            return WAITING_TIMEZONE
+    except Exception as e:
+        logger.error(f"Erreur dans handle_timezone_input : {e}")
+        await update.message.reply_text(
+            "❌ Une erreur s'est produite. Veuillez réessayer.",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("↩️ Menu principal", callback_data="main_menu")
+            ]])
+        )
+        return MAIN_MENU
+
+async def handle_channel_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """
+    Gère la réception d'informations sur un canal.
+    
+    Args:
+        update: L'objet Update de Telegram
+        context: Le contexte de la conversation
+        
+    Returns:
+        int: L'état suivant de la conversation
+    """
+    try:
+        user_input = update.message.text.strip()
+        channel_info = context.user_data.get('channel_info', {})
+        
+        # Vérifier l'étape actuelle de l'entrée des informations
+        step = channel_info.get('step', 'name')
+        
+        if step == 'name':
+            # Enregistrer le nom du canal
+            channel_info['name'] = user_input
+            channel_info['step'] = 'username'
+            context.user_data['channel_info'] = channel_info
+            
+            await update.message.reply_text(
+                "✅ Nom enregistré. Maintenant, envoyez le nom d'utilisateur du canal (commençant par @):"
+            )
+            return WAITING_CHANNEL_INFO
+        
+        elif step == 'username':
+            # Valider et enregistrer le nom d'utilisateur du canal
+            if not user_input.startswith('@'):
+                user_input = '@' + user_input
+                
+            if not InputValidator.validate_channel_name(user_input):
+                await update.message.reply_text(
+                    "❌ Format de nom d'utilisateur invalide. Il doit comporter entre 5 et 32 caractères (lettres, chiffres et _)."
+                )
+                return WAITING_CHANNEL_INFO
+            
+            # Enregistrer dans la base de données
+            try:
+                from database.manager import DatabaseManager
+                db_manager = DatabaseManager(context.bot_data.get('db_path'))
+                db_manager.add_channel(
+                    name=channel_info['name'], 
+                    username=user_input.replace('@', '')
+                )
+                
+                await update.message.reply_text(
+                    f"✅ Canal ajouté avec succès: {channel_info['name']} ({user_input})",
+                    reply_markup=InlineKeyboardMarkup([[
+                        InlineKeyboardButton("↩️ Menu principal", callback_data="main_menu")
+                    ]])
+                )
+                
+                # Nettoyer les données temporaires
+                context.user_data.pop('channel_info', None)
+                return MAIN_MENU
+                
+            except Exception as e:
+                logger.error(f"Erreur lors de l'ajout du canal: {e}")
+                await update.message.reply_text(
+                    "❌ Erreur lors de l'ajout du canal. Veuillez réessayer.",
+                    reply_markup=InlineKeyboardMarkup([[
+                        InlineKeyboardButton("↩️ Menu principal", callback_data="main_menu")
+                    ]])
+                )
+                return MAIN_MENU
+        
+        return MAIN_MENU
+        
+    except Exception as e:
+        logger.error(f"Erreur dans handle_channel_info: {e}")
+        await update.message.reply_text(
+            "❌ Une erreur est survenue. Retour au menu principal.",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("↩️ Menu principal", callback_data="main_menu")
+            ]])
+        )
+        return MAIN_MENU

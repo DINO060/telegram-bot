@@ -318,9 +318,10 @@ def initialize_bot():
         config = Config()
         db_manager = DatabaseManager(config.DB_PATH)
         resource_manager = ResourceManager(config.DOWNLOAD_FOLDER)
-        scheduler_manager = SchedulerManager(db_manager)
+        # Ne pas créer d'instance de scheduler_manager ici pour éviter les conflits
+        # La gestion du scheduler est faite dans bot.py
 
-        return config, db_manager, resource_manager, scheduler_manager
+        return config, db_manager, resource_manager
     except Exception as e:
         logger.critical(f"Erreur lors de l'initialisation du bot: {e}")
         raise

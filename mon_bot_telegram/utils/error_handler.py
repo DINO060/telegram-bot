@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Type, Callable, Awaitable
+from typing import Optional, Type, Callable, Awaitable, Any
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -7,10 +7,10 @@ logger = logging.getLogger('TelegramBot')
 
 class BotError(Exception):
     """Classe de base pour les erreurs du bot"""
-    def __init__(self, message: str, user_message: Optional[str] = None):
+    def __init__(self, message: str, original_error: Optional[Exception] = None):
         self.message = message
-        self.user_message = user_message or "Une erreur est survenue. Veuillez réessayer plus tard."
-        super().__init__(message)
+        self.original_error = original_error
+        super().__init__(self.message)
 
 class DatabaseError(BotError):
     """Erreur liée à la base de données"""
@@ -24,42 +24,32 @@ class ResourceError(BotError):
     """Erreur liée aux ressources"""
     pass
 
-async def handle_error(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE,
-    error: Exception
-) -> None:
+async def handle_error(error: Exception, context: Optional[Any] = None) -> None:
     """
-    Gestionnaire centralisé des erreurs
+    Gère les erreurs de manière centralisée
     
     Args:
-        update: Mise à jour Telegram
-        context: Contexte du bot
-        error: Exception à gérer
+        error: L'erreur à gérer
+        context: Contexte supplémentaire (optionnel)
     """
     try:
         # Log de l'erreur
-        logger.error(f"Erreur non gérée: {error}", exc_info=True)
+        error_message = str(error)
+        if context:
+            error_message += f"\nContexte: {context}"
         
-        # Message par défaut
-        error_message = "Une erreur est survenue. Veuillez réessayer plus tard."
+        logger.error(error_message)
         
-        # Messages personnalisés selon le type d'erreur
+        # Si c'est une BotError, on a déjà un message utilisateur
         if isinstance(error, BotError):
-            error_message = error.user_message
-        elif isinstance(error, DatabaseError):
-            error_message = "Erreur de base de données. Veuillez réessayer plus tard."
-        elif isinstance(error, ValidationError):
-            error_message = "Données invalides. Veuillez vérifier votre saisie."
-        elif isinstance(error, ResourceError):
-            error_message = "Erreur de ressources. Veuillez réessayer plus tard."
+            return error.message
         
-        # Envoi du message d'erreur à l'utilisateur
-        if update.effective_message:
-            await update.effective_message.reply_text(error_message)
-            
+        # Pour les autres erreurs, on retourne un message générique
+        return "Une erreur est survenue. Veuillez réessayer plus tard."
+        
     except Exception as e:
-        logger.critical(f"Erreur dans le gestionnaire d'erreurs: {e}", exc_info=True)
+        logger.error(f"Erreur lors de la gestion d'erreur: {e}")
+        return "Une erreur inattendue est survenue."
 
 def error_handler(
     error_types: Optional[list[Type[Exception]]] = None
@@ -89,7 +79,7 @@ def error_handler(
                         context = arg
                 
                 if update and context:
-                    await handle_error(update, context, e)
+                    await handle_error(e, context)
                 else:
                     logger.error(f"Erreur sans contexte: {e}", exc_info=True)
                 

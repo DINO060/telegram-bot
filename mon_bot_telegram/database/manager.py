@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from config.settings import settings
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,12 @@ class DatabaseManager:
     def setup_database(self) -> bool:
         """Initialise la base de données et crée les tables nécessaires"""
         try:
+            # Assurons-nous que le dossier parent existe
+            db_dir = os.path.dirname(self.db_path)
+            if db_dir and not os.path.exists(db_dir):
+                os.makedirs(db_dir, exist_ok=True)
+                logger.info(f"Dossier de base de données créé: {db_dir}")
+            
             self.connection = sqlite3.connect(
                 self.db_path,
                 timeout=settings.db_config["timeout"],

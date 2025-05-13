@@ -15,9 +15,10 @@ BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "data" / "bot.db"
 DOWNLOAD_FOLDER = BASE_DIR / "downloads"
 BACKUP_FOLDER = BASE_DIR / "backups"
+DATA_FOLDER = BASE_DIR / "data"
 
 # Création des dossiers si nécessaire
-for folder in [DOWNLOAD_FOLDER, BACKUP_FOLDER]:
+for folder in [DOWNLOAD_FOLDER, BACKUP_FOLDER, DATA_FOLDER]:
     folder.mkdir(parents=True, exist_ok=True)
 
 # Configuration du bot

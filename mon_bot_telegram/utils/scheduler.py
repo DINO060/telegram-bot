@@ -17,52 +17,30 @@ class SchedulerError(BotError):
     pass
 
 class SchedulerManager:
-    """Gestionnaire de planification pour le bot"""
+    """Gestionnaire de tâches planifiées"""
     
-    def __init__(
-        self,
-        timezone_str: str = "UTC",
-        job_defaults: Optional[Dict] = None,
-        jobstores: Optional[Dict] = None,
-        executors: Optional[Dict] = None
-    ):
-        """
-        Initialise le gestionnaire de planification
-        
-        Args:
-            timezone_str: Fuseau horaire (par défaut: UTC)
-            job_defaults: Paramètres par défaut des tâches
-            jobstores: Stockage des tâches
-            executors: Exécuteurs des tâches
-        """
-        self.timezone = timezone(timezone_str)
-        
-        # Configuration par défaut
-        default_job_defaults = {
-            'coalesce': True,
-            'max_instances': 1,
-            'misfire_grace_time': 60
-        }
-        
-        # Fusion avec les paramètres fournis
-        if job_defaults:
-            default_job_defaults.update(job_defaults)
+    def __init__(self, timezone_str: str = "UTC"):
+        """Initialise le gestionnaire de tâches"""
+        try:
+            # Configuration minimale sans options avancées
+            self.timezone = timezone(timezone_str)
+            self.scheduler = AsyncIOScheduler(timezone=self.timezone)
             
-        # Initialisation du scheduler
-        self.scheduler = AsyncIOScheduler(
-            job_defaults=default_job_defaults,
-            jobstores=jobstores,
-            executors=executors,
-            timezone=self.timezone
-        )
-        
-        logger.info(f"Scheduler initialisé avec le fuseau horaire: {timezone_str}")
-    
+            self.logger = logging.getLogger('SchedulerManager')
+            self.running = False
+            
+            logger.info(f"Scheduler initialisé avec le fuseau horaire: {timezone_str}")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'initialisation du scheduler: {e}")
+            raise SchedulerError(f"Initialisation du scheduler impossible: {e}")
+            
     def start(self) -> None:
         """Démarre le scheduler"""
         try:
-            self.scheduler.start()
-            logger.info("Scheduler démarré")
+            if not self.running:
+                self.scheduler.start()
+                self.running = True
+                logger.info("Scheduler démarré")
         except Exception as e:
             logger.error(f"Erreur lors du démarrage du scheduler: {e}")
             raise SchedulerError("Impossible de démarrer le scheduler")
@@ -274,4 +252,7 @@ class SchedulerManager:
                 'trigger': str(job.trigger),
                 'func': job.func.__name__ if callable(job.func) else str(job.func)
             })
-        return tasks 
+        return tasks
+
+# Ne pas créer d'instance globale ici pour éviter les conflits
+# L'instance principale est créée dans bot.py 

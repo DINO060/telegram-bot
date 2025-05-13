@@ -288,3 +288,57 @@ class InputValidator:
         except Exception as e:
             logger.error(f"Erreur lors de la validation de la date/heure: {e}")
             return None 
+
+class TimeInputValidator:
+    """Classe de validation des entrées temporelles"""
+    
+    @staticmethod
+    def validate_time_format(time_str: str) -> bool:
+        """
+        Valide le format d'une heure (HH:MM)
+        
+        Args:
+            time_str: L'heure à valider
+            
+        Returns:
+            bool: True si le format est valide
+        """
+        pattern = r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+        is_valid = re.match(pattern, time_str) is not None
+        if not is_valid:
+            logger.warning(f"Format d'heure invalide: {time_str}")
+        return is_valid
+    
+    @staticmethod
+    def validate_date_format(date_str: str) -> bool:
+        """
+        Valide le format d'une date (YYYY-MM-DD)
+        
+        Args:
+            date_str: La date à valider
+            
+        Returns:
+            bool: True si le format est valide
+        """
+        pattern = r'^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$'
+        is_valid = re.match(pattern, date_str) is not None
+        if not is_valid:
+            logger.warning(f"Format de date invalide: {date_str}")
+        return is_valid
+    
+    @staticmethod
+    def validate_datetime_format(datetime_str: str) -> bool:
+        """
+        Valide le format d'une date et heure (YYYY-MM-DD HH:MM)
+        
+        Args:
+            datetime_str: La date et heure à valider
+            
+        Returns:
+            bool: True si le format est valide
+        """
+        pattern = r'^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]) ([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+        is_valid = re.match(pattern, datetime_str) is not None
+        if not is_valid:
+            logger.warning(f"Format de date et heure invalide: {datetime_str}")
+        return is_valid 
