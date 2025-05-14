@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from config.settings import settings
 import os
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ class DatabaseManager:
                 )
             ''')
 
-            # Table des publications
+            # Table des publications avec colonnes pour les réactions et boutons URL
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS posts (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,6 +64,7 @@ class DatabaseManager:
                     content TEXT NOT NULL,
                     caption TEXT,
                     buttons TEXT,
+                    reactions TEXT,
                     scheduled_time TIMESTAMP,
                     status TEXT DEFAULT 'pending',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -78,6 +80,16 @@ class DatabaseManager:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
+
+            # Vérifier si la colonne reactions existe déjà
+            cursor.execute("PRAGMA table_info(posts)")
+            columns = cursor.fetchall()
+            column_names = [column[1] for column in columns]
+            
+            # Ajouter la colonne reactions si elle n'existe pas
+            if 'reactions' not in column_names:
+                cursor.execute("ALTER TABLE posts ADD COLUMN reactions TEXT")
+                logger.info("Colonne 'reactions' ajoutée à la table posts")
 
             self.connection.commit()
             return True
@@ -167,17 +179,21 @@ class DatabaseManager:
 
     def add_post(self, channel_id: int, post_type: str, content: str,
                  caption: Optional[str] = None, buttons: Optional[List[Dict]] = None,
-                 scheduled_time: Optional[str] = None) -> Optional[int]:
+                 reactions: Optional[List[str]] = None, scheduled_time: Optional[str] = None) -> Optional[int]:
         """Ajoute une nouvelle publication"""
         try:
             cursor = self.connection.cursor()
+            # Convertir les boutons et réactions en JSON
+            buttons_json = json.dumps(buttons) if buttons else None
+            reactions_json = json.dumps(reactions) if reactions else None
+            
             cursor.execute(
                 """
                 INSERT INTO posts 
-                (channel_id, post_type, content, caption, buttons, scheduled_time)
-                VALUES (?, ?, ?, ?, ?, ?)
+                (channel_id, post_type, content, caption, buttons, reactions, scheduled_time)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                (channel_id, post_type, content, caption, str(buttons) if buttons else None, scheduled_time)
+                (channel_id, post_type, content, caption, buttons_json, reactions_json, scheduled_time)
             )
             self.connection.commit()
             return cursor.lastrowid
@@ -191,7 +207,7 @@ class DatabaseManager:
             cursor = self.connection.cursor()
             cursor.execute(
                 """
-                SELECT id, channel_id, post_type, content, caption, buttons, scheduled_time
+                SELECT id, channel_id, post_type, content, caption, buttons, reactions, scheduled_time
                 FROM posts
                 WHERE id = ? AND status = 'pending'
                 """,
@@ -205,8 +221,9 @@ class DatabaseManager:
                     "post_type": result[2],
                     "content": result[3],
                     "caption": result[4],
-                    "buttons": eval(result[5]) if result[5] else None,
-                    "scheduled_time": result[6]
+                    "buttons": json.loads(result[5]) if result[5] else None,
+                    "reactions": json.loads(result[6]) if result[6] else None,
+                    "scheduled_time": result[7]
                 }
             return None
         except sqlite3.Error as e:
@@ -227,6 +244,36 @@ class DatabaseManager:
             logger.error(f"Erreur lors de la mise à jour de l'horaire: {e}")
             raise DatabaseError(f"Erreur lors de la mise à jour de l'horaire: {e}")
 
+    def update_post_reactions(self, post_id: int, reactions: List[str]) -> bool:
+        """Met à jour les réactions d'une publication"""
+        try:
+            cursor = self.connection.cursor()
+            reactions_json = json.dumps(reactions) if reactions else None
+            cursor.execute(
+                "UPDATE posts SET reactions = ? WHERE id = ?",
+                (reactions_json, post_id)
+            )
+            self.connection.commit()
+            return cursor.rowcount > 0
+        except sqlite3.Error as e:
+            logger.error(f"Erreur lors de la mise à jour des réactions: {e}")
+            raise DatabaseError(f"Erreur lors de la mise à jour des réactions: {e}")
+
+    def update_post_buttons(self, post_id: int, buttons: List[Dict]) -> bool:
+        """Met à jour les boutons URL d'une publication"""
+        try:
+            cursor = self.connection.cursor()
+            buttons_json = json.dumps(buttons) if buttons else None
+            cursor.execute(
+                "UPDATE posts SET buttons = ? WHERE id = ?",
+                (buttons_json, post_id)
+            )
+            self.connection.commit()
+            return cursor.rowcount > 0
+        except sqlite3.Error as e:
+            logger.error(f"Erreur lors de la mise à jour des boutons URL: {e}")
+            raise DatabaseError(f"Erreur lors de la mise à jour des boutons URL: {e}")
+
     def delete_post(self, post_id: int) -> bool:
         """Supprime une publication"""
         try:
@@ -244,25 +291,26 @@ class DatabaseManager:
             cursor = self.connection.cursor()
             cursor.execute(
                 """
-                SELECT id, channel_id, post_type, content, caption, buttons, scheduled_time
+                SELECT id, channel_id, post_type, content, caption, buttons, reactions, scheduled_time
                 FROM posts
                 WHERE status = 'pending' AND scheduled_time > datetime('now')
                 ORDER BY scheduled_time ASC
                 """
             )
             results = cursor.fetchall()
-            return [
-                {
-                    "id": row[0],
-                    "channel_id": row[1],
-                    "post_type": row[2],
-                    "content": row[3],
-                    "caption": row[4],
-                    "buttons": eval(row[5]) if row[5] else None,
-                    "scheduled_time": row[6]
-                }
-                for row in results
-            ]
+            posts = []
+            for result in results:
+                posts.append({
+                    "id": result[0],
+                    "channel_id": result[1],
+                    "post_type": result[2],
+                    "content": result[3],
+                    "caption": result[4],
+                    "buttons": json.loads(result[5]) if result[5] else None,
+                    "reactions": json.loads(result[6]) if result[6] else None,
+                    "scheduled_time": result[7]
+                })
+            return posts
         except sqlite3.Error as e:
             logger.error(f"Erreur lors de la récupération des publications planifiées: {e}")
             raise DatabaseError(f"Erreur lors de la récupération des publications planifiées: {e}")
@@ -282,24 +330,26 @@ class DatabaseManager:
             raise DatabaseError(f"Erreur lors de la récupération du fuseau horaire: {e}")
 
     def save_user_timezone(self, user_id: int, timezone: str) -> bool:
-        """Sauvegarde le fuseau horaire d'un utilisateur"""
+        """Enregistre le fuseau horaire d'un utilisateur"""
         try:
             cursor = self.connection.cursor()
             cursor.execute(
                 """
-                INSERT OR REPLACE INTO user_timezones 
-                (user_id, timezone, updated_at)
-                VALUES (?, ?, datetime('now'))
+                INSERT INTO user_timezones (user_id, timezone)
+                VALUES (?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                timezone = excluded.timezone,
+                updated_at = CURRENT_TIMESTAMP
                 """,
                 (user_id, timezone)
             )
             self.connection.commit()
             return True
         except sqlite3.Error as e:
-            logger.error(f"Erreur lors de la sauvegarde du fuseau horaire: {e}")
-            raise DatabaseError(f"Erreur lors de la sauvegarde du fuseau horaire: {e}")
+            logger.error(f"Erreur lors de l'enregistrement du fuseau horaire: {e}")
+            raise DatabaseError(f"Erreur lors de l'enregistrement du fuseau horaire: {e}")
 
     def __del__(self):
-        """Ferme la connexion à la base de données"""
+        """Ferme la connexion à la base de données lors de la destruction de l'objet"""
         if self.connection:
             self.connection.close()

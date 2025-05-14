@@ -8,7 +8,7 @@ from telegram.ext import (
     filters,
     ConversationHandler
 )
-from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from config.settings import settings, setup_logging
 from database.manager import DatabaseManager
@@ -30,7 +30,13 @@ from mon_bot_telegram.reaction_functions import (
     remove_reactions,
     add_url_button_to_post,
     handle_url_input,
-    remove_url_buttons
+    remove_url_buttons,
+    delete_post,
+    cancel_reactions,
+    cancel_url_button,
+    select_emoji,
+    remove_emoji,
+    finish_reactions
 )
 
 # États de la conversation
@@ -150,10 +156,15 @@ conv_handler = ConversationHandler(
         # Nouveaux états pour les réactions et boutons URL
         CONVERSATION_STATES['WAITING_REACTION_INPUT']: [
             MessageHandler(filters.TEXT, handle_reaction_input),
+            CallbackQueryHandler(cancel_reactions, pattern="^cancel_reactions_"),
+            CallbackQueryHandler(select_emoji, pattern="^select_emoji_"),
+            CallbackQueryHandler(remove_emoji, pattern="^remove_emoji_"),
+            CallbackQueryHandler(finish_reactions, pattern="^finish_reactions_"),
             CallbackQueryHandler(handle_callback)
         ],
         CONVERSATION_STATES['WAITING_URL_INPUT']: [
             MessageHandler(filters.TEXT, handle_url_input),
+            CallbackQueryHandler(cancel_url_button, pattern="^cancel_url_button_"),
             CallbackQueryHandler(handle_callback)
         ]
     },
@@ -217,6 +228,24 @@ async def main():
                     MessageHandler(filters.TEXT, handle_timezone)
                 ],
                 CONVERSATION_STATES['POST_ACTIONS']: [
+                    CallbackQueryHandler(add_reactions_to_post, pattern="^add_reactions_"),
+                    CallbackQueryHandler(add_url_button_to_post, pattern="^add_url_button_"),
+                    CallbackQueryHandler(remove_reactions, pattern="^remove_reactions_"),
+                    CallbackQueryHandler(remove_url_buttons, pattern="^remove_url_buttons_"),
+                    CallbackQueryHandler(delete_post, pattern="^delete_post_"),
+                    CallbackQueryHandler(handle_callback)
+                ],
+                CONVERSATION_STATES['WAITING_REACTION_INPUT']: [
+                    MessageHandler(filters.TEXT, handle_reaction_input),
+                    CallbackQueryHandler(cancel_reactions, pattern="^cancel_reactions_"),
+                    CallbackQueryHandler(select_emoji, pattern="^select_emoji_"),
+                    CallbackQueryHandler(remove_emoji, pattern="^remove_emoji_"),
+                    CallbackQueryHandler(finish_reactions, pattern="^finish_reactions_"),
+                    CallbackQueryHandler(handle_callback)
+                ],
+                CONVERSATION_STATES['WAITING_URL_INPUT']: [
+                    MessageHandler(filters.TEXT, handle_url_input),
+                    CallbackQueryHandler(cancel_url_button, pattern="^cancel_url_button_"),
                     CallbackQueryHandler(handle_callback)
                 ],
                 CONVERSATION_STATES['SEND_OPTIONS']: [
@@ -250,66 +279,66 @@ async def main():
                 CONVERSATION_STATES['WAITING_CONFIRMATION']: [
                     CallbackQueryHandler(handle_callback)
                 ],
-                CONVERSATION_STATES['WAITING_NEW_TIME']: [
-                    MessageHandler(filters.TEXT, message_handlers.handle_new_time)
-                ],
-                CONVERSATION_STATES['SCHEDULED_POSTS_MENU']: [
-                    CallbackQueryHandler(handle_callback)
-                ],
-                CONVERSATION_STATES['STATS_MENU']: [
-                    CallbackQueryHandler(handle_callback)
-                ],
-                # Nouveaux états pour les réactions et boutons URL
-                CONVERSATION_STATES['WAITING_REACTION_INPUT']: [
-                    MessageHandler(filters.TEXT, handle_reaction_input),
-                    CallbackQueryHandler(handle_callback)
-                ],
-                CONVERSATION_STATES['WAITING_URL_INPUT']: [
-                    MessageHandler(filters.TEXT, handle_url_input),
-                    CallbackQueryHandler(handle_callback)
-                ]
             },
             fallbacks=[
                 CommandHandler("cancel", command_handlers.cancel),
-                CommandHandler("help", command_handlers.help)
+                CommandHandler("start", command_handlers.start)
             ],
-            per_message=False
+            per_message=False,
         )
 
-        # Ajout des gestionnaires à l'application
+        # Ajout du gestionnaire de conversation à l'application
         application.add_handler(conv_handler)
 
-        # Démarrage du bot
-        logger.info("Démarrage du bot...")
+        # Démarrage de l'application
         await application.initialize()
         await application.start()
-        await application.run_polling()
+        await application.updater.start_polling()
+
+        # Démarrage des tâches planifiées
+        scheduled_tasks_coroutine = scheduled_tasks.start(application)
+        asyncio.create_task(scheduled_tasks_coroutine)
+
+        # Maintenir l'application en cours d'exécution
+        await application.updater.stop()
+        await application.stop()
 
     except Exception as e:
         logger.error(f"Erreur lors du démarrage du bot: {e}")
-        raise
+        logger.exception("Traceback complet:")
 
 
 async def start(update, context):
-    """Gère la commande /start"""
-    user = update.effective_user
-    welcome_message = (
-        f"👋 Bonjour {user.first_name}!\n\n"
-        "Je suis votre assistant de publication Telegram.\n"
-        "Utilisez les commandes suivantes:\n"
-        "/create - Créer une nouvelle publication\n"
-        "/schedule - Planifier une publication\n"
-        "/settings - Configurer le bot"
+    """Commande de démarrage du bot"""
+    keyboard = [
+        [InlineKeyboardButton("📝 Nouvelle publication", callback_data="create_publication")],
+        [InlineKeyboardButton("📅 Publications planifiées", callback_data="planifier_post")],
+        [InlineKeyboardButton("⚙️ Paramètres", callback_data="settings")]
+    ]
+    await update.message.reply_text(
+        "👋 Bienvenue dans le Bot de Publication !\n\n"
+        "Je vous aide à publier du contenu dans vos canaux Telegram. Que souhaitez-vous faire ?",
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
-    await update.message.reply_text(welcome_message)
     return MAIN_MENU
 
 
 async def cancel(update, context):
-    """Annule la conversation en cours"""
-    await update.message.reply_text("❌ Opération annulée")
-    return ConversationHandler.END
+    """Commande pour annuler l'opération en cours"""
+    await update.message.reply_text(
+        "❌ Opération annulée. Retour au menu principal.",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("📝 Nouvelle publication", callback_data="create_publication")],
+            [InlineKeyboardButton("📅 Publications planifiées", callback_data="planifier_post")],
+            [InlineKeyboardButton("⚙️ Paramètres", callback_data="settings")]
+        ])
+    )
+    # Réinitialisation des variables de contexte
+    if 'current_post' in context.user_data:
+        del context.user_data['current_post']
+    if 'current_channel' in context.user_data:
+        del context.user_data['current_channel']
+    return MAIN_MENU
 
 
 if __name__ == '__main__':
