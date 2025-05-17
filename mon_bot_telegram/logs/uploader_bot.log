@@ -15441,3 +15441,376 @@ telegram.error.BadRequest: There is no text in the message to edit
 2025-05-14 15:03:40,997 - UploaderBot - INFO - Callback reçu : action=create_publication, post_id=None
 2025-05-14 15:04:09,406 - UploaderBot - INFO - Fichier enregistré : downloads\photo_2025-05-14_19-04-01.jpg
 2025-05-14 15:04:09,454 - UploaderBot - ERROR - Erreur lors du nettoyage : Event loop is closed
+2025-05-14 18:25:04,221 - UploaderBot - INFO - Chemin de la base de données: C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.db
+2025-05-14 18:25:04,233 - UploaderBot - INFO - Connexion à la base de données réussie: (1,)
+2025-05-14 18:25:04,237 - UploaderBot - INFO - Base de données initialisée avec succès
+2025-05-14 18:25:04,527 - UploaderBot - INFO - Initialisation de l'application...
+2025-05-14 18:25:04,531 - UploaderBot - INFO - Scheduler démarré avec succès
+2025-05-14 18:25:04,537 - UploaderBot - INFO - ConversationHandler configuré avec états: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15, 11, 12, 13
+2025-05-14 18:25:04,538 - UploaderBot - INFO - Ajout du handler de callback global
+2025-05-14 18:25:04,538 - UploaderBot - INFO - Initialisation du userbot Telethon demandée
+2025-05-14 18:25:04,540 - UploaderBot - INFO - Démarrage du bot...
+2025-05-14 18:25:04,750 - UploaderBot - INFO - Client Telethon démarré avec succès
+2025-05-14 18:25:13,977 - UploaderBot - INFO - Callback reçu : create_publication de l'utilisateur 6275025228
+2025-05-14 18:25:14,011 - UploaderBot - INFO - Message ID: 7303, Chat ID: 6275025228
+2025-05-14 18:25:14,012 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-14 18:25:14,012 - UploaderBot - INFO - Canal sélectionné : Aucun
+2025-05-14 18:25:14,014 - UploaderBot - INFO - Posts en cours : 0
+2025-05-14 18:25:14,314 - UploaderBot - INFO - Type de callback détecté: create
+2025-05-14 18:25:14,323 - UploaderBot - INFO - create_publication appelé par l'utilisateur 6275025228
+2025-05-14 18:25:14,327 - UploaderBot - INFO - Récupération des canaux pour l'utilisateur 6275025228
+2025-05-14 18:25:14,453 - UploaderBot - INFO - Connexion à la base de données réussie: (1,)
+2025-05-14 18:25:14,469 - UploaderBot - INFO - Canaux trouvés: [('Manga', 'clacyk')]
+2025-05-14 18:25:14,471 - UploaderBot - INFO - Canaux trouvés pour l'utilisateur 6275025228: [('Manga', 'clacyk')]
+2025-05-14 18:25:14,902 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7303_create_publication
+2025-05-14 18:25:15,989 - UploaderBot - INFO - Callback reçu : select_channel_clacyk de l'utilisateur 6275025228
+2025-05-14 18:25:16,160 - UploaderBot - INFO - Message ID: 7303, Chat ID: 6275025228
+2025-05-14 18:25:16,686 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-14 18:25:16,690 - UploaderBot - INFO - Canal sélectionné : Aucun
+2025-05-14 18:25:16,691 - UploaderBot - INFO - Posts en cours : 0
+2025-05-14 18:25:16,973 - UploaderBot - INFO - Type de callback détecté: select
+2025-05-14 18:25:17,035 - UploaderBot - INFO - Sélection du canal demandée : @clacyk
+2025-05-14 18:25:17,072 - UploaderBot - INFO - Récupération du canal @clacyk pour l'utilisateur 6275025228
+2025-05-14 18:25:17,183 - UploaderBot - INFO - Canal trouvé: (6, 'Manga')
+2025-05-14 18:25:17,421 - UploaderBot - INFO - Informations du canal récupérées: (6, 'Manga')
+2025-05-14 18:25:17,487 - UploaderBot - INFO - Canal stocké dans context.user_data: {'username': 'clacyk', 'name': 'Manga'}
+2025-05-14 18:25:17,800 - UploaderBot - INFO - Canal @clacyk sélectionné avec succès par l'utilisateur 6275025228
+2025-05-14 18:25:17,801 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7303_select_channel_clacyk
+2025-05-14 18:25:33,035 - UploaderBot - INFO - Callback reçu : add_reactions_0 de l'utilisateur 6275025228
+2025-05-14 18:25:34,535 - UploaderBot - INFO - Message ID: 7306, Chat ID: 6275025228
+2025-05-14 18:25:34,537 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-14 18:25:34,538 - UploaderBot - INFO - Canal sélectionné : {'username': 'clacyk', 'name': 'Manga'}
+2025-05-14 18:25:34,539 - UploaderBot - INFO - Posts en cours : 1
+2025-05-14 18:25:35,115 - UploaderBot - INFO - Type de callback détecté: add
+2025-05-14 18:25:35,638 - UploaderBot - INFO - Traitement de l'ajout de réactions avec callback_data: add_reactions_0
+2025-05-14 18:25:36,081 - UploaderBot - ERROR - Erreur dans handle_callback pour add_reactions_0: There is no text in the message to edit
+2025-05-14 18:25:36,394 - UploaderBot - ERROR - Traceback complet:
+Traceback (most recent call last):
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 1027, in handle_callback
+    return await add_reactions_to_post(update, context)
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 2481, in add_reactions_to_post
+    await query.edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_callbackquery.py", line 265, in edit_message_text
+    return await self._get_message().edit_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_message.py", line 3755, in edit_text
+    return await self.get_bot().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 1711, in edit_message_text
+    return await super().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 4285, in edit_message_text
+    return await self._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 618, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 803, in _send_message
+    result = await self._post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 353, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: There is no text in the message to edit
+2025-05-14 18:25:45,374 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7306_add_reactions_0
+2025-05-14 18:25:45,639 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7306_add_reactions_0
+2025-05-14 18:25:46,088 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7306_add_reactions_0
+2025-05-14 18:26:42,193 - UploaderBot - INFO - Callback reçu : add_url_button_0 de l'utilisateur 6275025228
+2025-05-14 18:26:42,193 - UploaderBot - INFO - Message ID: 7306, Chat ID: 6275025228
+2025-05-14 18:26:42,193 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-14 18:26:42,194 - UploaderBot - INFO - Canal sélectionné : {'username': 'clacyk', 'name': 'Manga'}
+2025-05-14 18:26:42,194 - UploaderBot - INFO - Posts en cours : 1
+2025-05-14 18:26:42,741 - UploaderBot - INFO - Type de callback détecté: add
+2025-05-14 18:26:42,741 - UploaderBot - INFO - Traitement de l'ajout de bouton URL avec callback_data: add_url_button_0
+2025-05-14 18:26:43,117 - UploaderBot - ERROR - Erreur dans handle_callback pour add_url_button_0: There is no text in the message to edit
+2025-05-14 18:26:43,117 - UploaderBot - ERROR - Traceback complet:
+Traceback (most recent call last):
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 1036, in handle_callback
+    return await add_url_button_to_post(update, context)
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 2509, in add_url_button_to_post
+    await query.edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_callbackquery.py", line 265, in edit_message_text
+    return await self._get_message().edit_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_message.py", line 3755, in edit_text
+    return await self.get_bot().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 1711, in edit_message_text
+    return await super().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 4285, in edit_message_text
+    return await self._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 618, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 803, in _send_message
+    result = await self._post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 353, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: There is no text in the message to edit
+2025-05-14 18:26:43,646 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7306_add_url_button_0
+2025-05-15 12:20:15,829 - UploaderBot - INFO - Chemin de la base de données: C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.db
+2025-05-15 12:20:15,855 - UploaderBot - INFO - Connexion à la base de données réussie: (1,)
+2025-05-15 12:20:15,859 - UploaderBot - INFO - Base de données initialisée avec succès
+2025-05-15 12:20:16,218 - UploaderBot - INFO - Initialisation de l'application...
+2025-05-15 12:20:16,223 - UploaderBot - INFO - Scheduler démarré avec succès
+2025-05-15 12:20:16,228 - UploaderBot - INFO - ConversationHandler configuré avec états: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15, 11, 12, 13
+2025-05-15 12:20:16,229 - UploaderBot - INFO - Ajout du handler de callback global
+2025-05-15 12:20:16,230 - UploaderBot - INFO - Initialisation du userbot Telethon demandée
+2025-05-15 12:20:16,230 - UploaderBot - INFO - Démarrage du bot...
+2025-05-15 12:20:16,544 - UploaderBot - INFO - Client Telethon démarré avec succès
+2025-05-15 12:21:55,120 - UploaderBot - INFO - Callback reçu : create_publication de l'utilisateur 6275025228
+2025-05-15 12:21:55,563 - UploaderBot - INFO - Message ID: 7310, Chat ID: 6275025228
+2025-05-15 12:21:55,568 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-15 12:21:55,596 - UploaderBot - INFO - Canal sélectionné : Aucun
+2025-05-15 12:21:55,601 - UploaderBot - INFO - Posts en cours : 0
+2025-05-15 12:21:56,287 - UploaderBot - INFO - Type de callback détecté: create
+2025-05-15 12:21:56,319 - UploaderBot - INFO - create_publication appelé par l'utilisateur 6275025228
+2025-05-15 12:21:56,323 - UploaderBot - INFO - Récupération des canaux pour l'utilisateur 6275025228
+2025-05-15 12:21:57,689 - UploaderBot - INFO - Connexion à la base de données réussie: (1,)
+2025-05-15 12:21:57,855 - UploaderBot - INFO - Canaux trouvés: [('Manga', 'clacyk')]
+2025-05-15 12:21:57,875 - UploaderBot - INFO - Canaux trouvés pour l'utilisateur 6275025228: [('Manga', 'clacyk')]
+2025-05-15 12:21:58,167 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7310_create_publication
+2025-05-15 12:21:59,151 - UploaderBot - INFO - Callback reçu : select_channel_clacyk de l'utilisateur 6275025228
+2025-05-15 12:21:59,808 - UploaderBot - INFO - Message ID: 7310, Chat ID: 6275025228
+2025-05-15 12:21:59,991 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-15 12:22:00,324 - UploaderBot - INFO - Canal sélectionné : Aucun
+2025-05-15 12:22:00,541 - UploaderBot - INFO - Posts en cours : 0
+2025-05-15 12:22:07,425 - UploaderBot - INFO - Type de callback détecté: select
+2025-05-15 12:22:08,024 - UploaderBot - INFO - Sélection du canal demandée : @clacyk
+2025-05-15 12:22:08,025 - UploaderBot - INFO - Récupération du canal @clacyk pour l'utilisateur 6275025228
+2025-05-15 12:22:10,185 - UploaderBot - INFO - Canal trouvé: (6, 'Manga')
+2025-05-15 12:22:10,198 - UploaderBot - INFO - Informations du canal récupérées: (6, 'Manga')
+2025-05-15 12:22:10,204 - UploaderBot - INFO - Canal stocké dans context.user_data: {'username': 'clacyk', 'name': 'Manga'}
+2025-05-15 12:22:10,890 - UploaderBot - INFO - Canal @clacyk sélectionné avec succès par l'utilisateur 6275025228
+2025-05-15 12:22:11,275 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7310_select_channel_clacyk
+2025-05-15 12:23:05,821 - UploaderBot - INFO - Callback reçu : add_reactions_0 de l'utilisateur 6275025228
+2025-05-15 12:23:09,313 - UploaderBot - INFO - Message ID: 7313, Chat ID: 6275025228
+2025-05-15 12:23:11,668 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-15 12:23:12,902 - UploaderBot - INFO - Canal sélectionné : {'username': 'clacyk', 'name': 'Manga'}
+2025-05-15 12:23:12,977 - UploaderBot - INFO - Posts en cours : 1
+2025-05-15 12:23:18,000 - UploaderBot - INFO - Type de callback détecté: add
+2025-05-15 12:23:18,573 - UploaderBot - INFO - Traitement de l'ajout de réactions avec callback_data: add_reactions_0
+2025-05-15 12:23:19,017 - UploaderBot - ERROR - Erreur dans handle_callback pour add_reactions_0: There is no text in the message to edit
+2025-05-15 12:23:20,059 - UploaderBot - ERROR - Traceback complet:
+Traceback (most recent call last):
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 1027, in handle_callback
+    return await add_reactions_to_post(update, context)
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 2481, in add_reactions_to_post
+    await query.edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_callbackquery.py", line 265, in edit_message_text
+    return await self._get_message().edit_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_message.py", line 3755, in edit_text
+    return await self.get_bot().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 1711, in edit_message_text
+    return await super().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 4285, in edit_message_text
+    return await self._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 618, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 803, in _send_message
+    result = await self._post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 353, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: There is no text in the message to edit
+2025-05-15 12:23:30,717 - UploaderBot - ERROR - Erreur secondaire : Query is too old and response timeout expired or query id is invalid
+2025-05-15 12:23:31,815 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7313_add_reactions_0
+2025-05-15 12:23:33,595 - UploaderBot - ERROR - Erreur non gérée : Query is too old and response timeout expired or query id is invalid
+Traceback (most recent call last):
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_application.py", line 1298, in process_update
+    await coroutine
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_handlers\basehandler.py", line 158, in handle_update
+    return await self.callback(update, context)
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 797, in handle_callback
+    await query.answer("Action déjà traitée")
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_callbackquery.py", line 186, in answer
+    return await self.get_bot().answer_callback_query(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 948, in answer_callback_query
+    return await super().answer_callback_query(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 4182, in answer_callback_query
+    return await self._post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 353, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: Query is too old and response timeout expired or query id is invalid
+2025-05-15 12:24:29,009 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7313_add_reactions_0
+2025-05-15 12:24:29,561 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7313_add_reactions_0
+2025-05-15 12:25:57,949 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7313_add_reactions_0
+2025-05-15 12:25:58,558 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7313_add_reactions_0
+2025-05-15 12:26:20,192 - UploaderBot - INFO - Callback reçu : add_reactions_1 de l'utilisateur 6275025228
+2025-05-15 12:26:20,193 - UploaderBot - INFO - Message ID: 7315, Chat ID: 6275025228
+2025-05-15 12:26:20,193 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-15 12:26:20,193 - UploaderBot - INFO - Canal sélectionné : {'username': 'clacyk', 'name': 'Manga'}
+2025-05-15 12:26:20,195 - UploaderBot - INFO - Posts en cours : 2
+2025-05-15 12:26:20,621 - UploaderBot - INFO - Type de callback détecté: add
+2025-05-15 12:26:20,622 - UploaderBot - INFO - Traitement de l'ajout de réactions avec callback_data: add_reactions_1
+2025-05-15 12:26:21,136 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7315_add_reactions_1
+2025-05-15 17:02:42,885 - UploaderBot - INFO - Chemin de la base de données: C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.db
+2025-05-15 17:02:42,899 - UploaderBot - INFO - Connexion à la base de données réussie: (1,)
+2025-05-15 17:02:42,902 - UploaderBot - INFO - Base de données initialisée avec succès
+2025-05-15 17:02:43,316 - UploaderBot - INFO - Initialisation de l'application...
+2025-05-15 17:02:43,321 - UploaderBot - INFO - Scheduler démarré avec succès
+2025-05-15 17:02:43,326 - UploaderBot - INFO - ConversationHandler configuré avec états: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15, 11, 12, 13
+2025-05-15 17:02:43,327 - UploaderBot - INFO - Ajout du handler de callback global
+2025-05-15 17:02:43,330 - UploaderBot - INFO - Initialisation du userbot Telethon demandée
+2025-05-15 17:02:43,330 - UploaderBot - INFO - Démarrage du bot...
+2025-05-15 17:02:43,607 - UploaderBot - INFO - Client Telethon démarré avec succès
+2025-05-15 17:02:55,038 - UploaderBot - INFO - Callback reçu : create_publication de l'utilisateur 6275025228
+2025-05-15 17:02:55,039 - UploaderBot - INFO - Message ID: 7317, Chat ID: 6275025228
+2025-05-15 17:02:55,040 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-15 17:02:55,042 - UploaderBot - INFO - Canal sélectionné : Aucun
+2025-05-15 17:02:55,043 - UploaderBot - INFO - Posts en cours : 0
+2025-05-15 17:02:55,300 - UploaderBot - INFO - Type de callback détecté: create
+2025-05-15 17:02:55,301 - UploaderBot - INFO - create_publication appelé par l'utilisateur 6275025228
+2025-05-15 17:02:55,302 - UploaderBot - INFO - Récupération des canaux pour l'utilisateur 6275025228
+2025-05-15 17:02:55,407 - UploaderBot - INFO - Connexion à la base de données réussie: (1,)
+2025-05-15 17:02:55,412 - UploaderBot - INFO - Canaux trouvés: [('Manga', 'clacyk')]
+2025-05-15 17:02:55,413 - UploaderBot - INFO - Canaux trouvés pour l'utilisateur 6275025228: [('Manga', 'clacyk')]
+2025-05-15 17:02:55,676 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7317_create_publication
+2025-05-15 17:02:58,229 - UploaderBot - INFO - Callback reçu : select_channel_clacyk de l'utilisateur 6275025228
+2025-05-15 17:02:58,230 - UploaderBot - INFO - Message ID: 7317, Chat ID: 6275025228
+2025-05-15 17:02:58,231 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-15 17:02:58,232 - UploaderBot - INFO - Canal sélectionné : Aucun
+2025-05-15 17:02:58,233 - UploaderBot - INFO - Posts en cours : 0
+2025-05-15 17:02:58,517 - UploaderBot - INFO - Type de callback détecté: select
+2025-05-15 17:02:58,518 - UploaderBot - INFO - Sélection du canal demandée : @clacyk
+2025-05-15 17:02:58,519 - UploaderBot - INFO - Récupération du canal @clacyk pour l'utilisateur 6275025228
+2025-05-15 17:02:58,524 - UploaderBot - INFO - Canal trouvé: (6, 'Manga')
+2025-05-15 17:02:58,527 - UploaderBot - INFO - Informations du canal récupérées: (6, 'Manga')
+2025-05-15 17:02:58,531 - UploaderBot - INFO - Canal stocké dans context.user_data: {'username': 'clacyk', 'name': 'Manga'}
+2025-05-15 17:02:58,791 - UploaderBot - INFO - Canal @clacyk sélectionné avec succès par l'utilisateur 6275025228
+2025-05-15 17:02:58,792 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7317_select_channel_clacyk
+2025-05-15 17:03:33,212 - UploaderBot - INFO - Callback reçu : add_reactions_0 de l'utilisateur 6275025228
+2025-05-15 17:03:33,213 - UploaderBot - INFO - Message ID: 7320, Chat ID: 6275025228
+2025-05-15 17:03:33,214 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-15 17:03:33,215 - UploaderBot - INFO - Canal sélectionné : {'username': 'clacyk', 'name': 'Manga'}
+2025-05-15 17:03:33,216 - UploaderBot - INFO - Posts en cours : 1
+2025-05-15 17:03:33,835 - UploaderBot - INFO - Type de callback détecté: add
+2025-05-15 17:03:33,836 - UploaderBot - INFO - Traitement de l'ajout de réactions avec callback_data: add_reactions_0
+2025-05-15 17:03:34,292 - UploaderBot - ERROR - Erreur dans handle_callback pour add_reactions_0: There is no text in the message to edit
+2025-05-15 17:03:34,293 - UploaderBot - ERROR - Traceback complet:
+Traceback (most recent call last):
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 1027, in handle_callback
+    return await add_reactions_to_post(update, context)
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 2481, in add_reactions_to_post
+    await query.edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_callbackquery.py", line 265, in edit_message_text
+    return await self._get_message().edit_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_message.py", line 3755, in edit_text
+    return await self.get_bot().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 1711, in edit_message_text
+    return await super().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 4285, in edit_message_text
+    return await self._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 618, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 803, in _send_message
+    result = await self._post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 353, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: There is no text in the message to edit
+2025-05-15 17:03:35,108 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7320_add_reactions_0
+2025-05-17 12:24:13,652 - UploaderBot - INFO - Chemin de la base de données: C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.db
+2025-05-17 12:24:13,664 - UploaderBot - INFO - Connexion à la base de données réussie: (1,)
+2025-05-17 12:24:13,666 - UploaderBot - INFO - Base de données initialisée avec succès
+2025-05-17 12:24:13,949 - UploaderBot - INFO - Initialisation de l'application...
+2025-05-17 12:24:13,952 - UploaderBot - INFO - Scheduler démarré avec succès
+2025-05-17 12:24:13,957 - UploaderBot - INFO - ConversationHandler configuré avec états: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 15, 11, 12, 13
+2025-05-17 12:24:13,958 - UploaderBot - INFO - Ajout du handler de callback global
+2025-05-17 12:24:13,959 - UploaderBot - INFO - Initialisation du userbot Telethon demandée
+2025-05-17 12:24:13,959 - UploaderBot - INFO - Démarrage du bot...
+2025-05-17 12:24:14,209 - UploaderBot - INFO - Client Telethon démarré avec succès
+2025-05-17 12:24:40,241 - UploaderBot - INFO - Callback reçu : create_publication de l'utilisateur 6275025228
+2025-05-17 12:24:40,241 - UploaderBot - INFO - Message ID: 7323, Chat ID: 6275025228
+2025-05-17 12:24:40,241 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-17 12:24:40,242 - UploaderBot - INFO - Canal sélectionné : Aucun
+2025-05-17 12:24:40,243 - UploaderBot - INFO - Posts en cours : 0
+2025-05-17 12:24:40,486 - UploaderBot - INFO - Type de callback détecté: create
+2025-05-17 12:24:40,487 - UploaderBot - INFO - create_publication appelé par l'utilisateur 6275025228
+2025-05-17 12:24:40,489 - UploaderBot - INFO - Récupération des canaux pour l'utilisateur 6275025228
+2025-05-17 12:24:40,598 - UploaderBot - INFO - Connexion à la base de données réussie: (1,)
+2025-05-17 12:24:40,605 - UploaderBot - INFO - Canaux trouvés: [('Manga', 'clacyk')]
+2025-05-17 12:24:40,606 - UploaderBot - INFO - Canaux trouvés pour l'utilisateur 6275025228: [('Manga', 'clacyk')]
+2025-05-17 12:24:40,865 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7323_create_publication
+2025-05-17 12:24:42,121 - UploaderBot - INFO - Callback reçu : select_channel_clacyk de l'utilisateur 6275025228
+2025-05-17 12:24:42,122 - UploaderBot - INFO - Message ID: 7323, Chat ID: 6275025228
+2025-05-17 12:24:42,122 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-17 12:24:42,123 - UploaderBot - INFO - Canal sélectionné : Aucun
+2025-05-17 12:24:42,124 - UploaderBot - INFO - Posts en cours : 0
+2025-05-17 12:24:42,372 - UploaderBot - INFO - Type de callback détecté: select
+2025-05-17 12:24:42,373 - UploaderBot - INFO - Sélection du canal demandée : @clacyk
+2025-05-17 12:24:42,373 - UploaderBot - INFO - Récupération du canal @clacyk pour l'utilisateur 6275025228
+2025-05-17 12:24:42,374 - UploaderBot - INFO - Canal trouvé: (6, 'Manga')
+2025-05-17 12:24:42,375 - UploaderBot - INFO - Informations du canal récupérées: (6, 'Manga')
+2025-05-17 12:24:42,375 - UploaderBot - INFO - Canal stocké dans context.user_data: {'username': 'clacyk', 'name': 'Manga'}
+2025-05-17 12:24:42,631 - UploaderBot - INFO - Canal @clacyk sélectionné avec succès par l'utilisateur 6275025228
+2025-05-17 12:24:42,632 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7323_select_channel_clacyk
+2025-05-17 12:25:07,566 - UploaderBot - INFO - Callback reçu : add_reactions_0 de l'utilisateur 6275025228
+2025-05-17 12:25:07,566 - UploaderBot - INFO - Message ID: 7326, Chat ID: 6275025228
+2025-05-17 12:25:07,567 - UploaderBot - INFO - État de conversation actuel : Non défini
+2025-05-17 12:25:07,567 - UploaderBot - INFO - Canal sélectionné : {'username': 'clacyk', 'name': 'Manga'}
+2025-05-17 12:25:07,567 - UploaderBot - INFO - Posts en cours : 1
+2025-05-17 12:25:08,114 - UploaderBot - INFO - Type de callback détecté: add
+2025-05-17 12:25:08,115 - UploaderBot - INFO - Traitement de l'ajout de réactions avec callback_data: add_reactions_0
+2025-05-17 12:25:08,494 - UploaderBot - ERROR - Erreur dans handle_callback pour add_reactions_0: There is no text in the message to edit
+2025-05-17 12:25:08,496 - UploaderBot - ERROR - Traceback complet:
+Traceback (most recent call last):
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 1027, in handle_callback
+    return await add_reactions_to_post(update, context)
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\mon_bot_telegram\bot.py", line 2481, in add_reactions_to_post
+    await query.edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_callbackquery.py", line 265, in edit_message_text
+    return await self._get_message().edit_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_message.py", line 3755, in edit_text
+    return await self.get_bot().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 1711, in edit_message_text
+    return await super().edit_message_text(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 4285, in edit_message_text
+    return await self._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 618, in _send_message
+    result = await super()._send_message(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 803, in _send_message
+    result = await self._post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 691, in _post
+    return await self._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\ext\_extbot.py", line 362, in _do_post
+    return await super()._do_post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\_bot.py", line 720, in _do_post
+    result = await request.post(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 197, in post
+    result = await self._request_wrapper(
+  File "C:\Users\djohn\PycharmProjects\uploaderbot\.venv\lib\site-packages\telegram\request\_baserequest.py", line 353, in _request_wrapper
+    raise BadRequest(message)
+telegram.error.BadRequest: There is no text in the message to edit
+2025-05-17 12:25:09,205 - UploaderBot - WARNING - Callback déjà traité, ignoré : 7326_add_reactions_0
+2025-05-17 12:44:03,184 - UploaderBot - INFO - Arrêt du bot
+2025-05-17 12:44:03,269 - UploaderBot - ERROR - Erreur lors de l'arrêt du scheduler: Event loop is closed
+2025-05-17 12:44:03,799 - UploaderBot - INFO - Scheduler arrêté avec succès
