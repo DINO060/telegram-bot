@@ -7,6 +7,7 @@ import sqlite3
 import pytz
 import os
 import asyncio
+import json
 
 from utils.message_utils import MessageError, PostType
 from database.manager import DatabaseManager
@@ -189,18 +190,22 @@ async def handle_edit_time(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 async def handle_send_now(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Gère l'envoi immédiat d'un post planifié"""
-    try:
-        query = update.callback_query
-        await query.answer()
+    """
+    Envoie un post planifié immédiatement.
 
+    Args:
+        update: L'objet Update de Telegram
+        context: Le contexte de la conversation
+
+    Returns:
+        int: L'état suivant de la conversation
+    """
+    query = update.callback_query
+    await query.answer()
+
+    try:
         if 'current_scheduled_post' not in context.user_data:
-            await query.edit_message_text(
-                "❌ Post introuvable.",
-                reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("↩️ Menu principal", callback_data="main_menu")
-                ]])
-            )
+            await query.message.reply_text("❌ Aucun post planifié sélectionné.")
             return MAIN_MENU
 
         post = context.user_data['current_scheduled_post']
@@ -209,7 +214,16 @@ async def handle_send_now(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = []
             if post.get('buttons'):
                 try:
-                    buttons = eval(post['buttons'])
+                    # Remplacer eval() par json.loads() pour une meilleure sécurité
+                    if isinstance(post['buttons'], str):
+                        try:
+                            buttons = json.loads(post['buttons'])
+                        except json.JSONDecodeError:
+                            logger.warning("Impossible de décoder les boutons comme JSON, utilisation telle quelle")
+                            buttons = post['buttons']
+                    else:
+                        buttons = post['buttons']
+                        
                     for btn in buttons:
                         keyboard.append([InlineKeyboardButton(btn['text'], url=btn['url'])])
                 except Exception as e:

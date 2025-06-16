@@ -4,6 +4,7 @@ Utilitaires de planification pour le bot Telegram.
 import logging
 import sqlite3
 import asyncio
+import json
 from typing import Dict, Any
 from datetime import datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -38,7 +39,16 @@ async def send_scheduled_file(post: Dict[str, Any]) -> bool:
         keyboard = None
         if post.get('buttons'):
             try:
-                buttons = eval(post['buttons']) if isinstance(post['buttons'], str) else post['buttons']
+                # Remplacer eval() par json.loads() pour une meilleure sécurité
+                if isinstance(post['buttons'], str):
+                    try:
+                        buttons = json.loads(post['buttons'])
+                    except json.JSONDecodeError:
+                        logger.warning("Impossible de décoder les boutons comme JSON, utilisation telle quelle")
+                        buttons = post['buttons']
+                else:
+                    buttons = post['buttons']
+                    
                 keyboard_buttons = []
                 for btn in buttons:
                     keyboard_buttons.append([InlineKeyboardButton(btn['text'], url=btn['url'])])

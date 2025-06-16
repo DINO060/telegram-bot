@@ -1,0 +1,28 @@
+# === Fichiers d'environnement ===
+.env
+.env.*
+
+# === Fichiers de session et DB ===
+*.session
+*.session-journal
+*.db
+*.sqlite3
+
+# === Caches Python ===
+__pycache__/
+*.py[cod]
+
+# === Fichiers téléchargés ===
+downloads/
+temp/
+
+# === Environnements virtuels ===
+.venv/
+venv/
+env/
+
+# === Fichiers systèmes et IDE ===
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

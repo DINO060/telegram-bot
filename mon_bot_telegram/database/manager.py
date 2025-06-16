@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import sqlite3
 import logging
 from datetime import datetime
@@ -24,8 +24,9 @@ class DatabaseManager:
     des données.
     """
 
-    def __init__(self, db_path: str = settings.db_config["path"]):
-        self.db_path = db_path
+    def __init__(self):
+        """Initialise le gestionnaire de base de données"""
+        self.db_path = settings.db_config["path"]
         self.connection = None
         self.setup_database()
 
@@ -51,9 +52,23 @@ class DatabaseManager:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     username TEXT UNIQUE NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    user_id INTEGER NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    thumbnail TEXT,
+                    tag TEXT
                 )
             ''')
+
+            # Ajouter les colonnes thumbnail et tag si elles n'existent pas
+            try:
+                cursor.execute("ALTER TABLE channels ADD COLUMN thumbnail TEXT")
+            except sqlite3.OperationalError:
+                pass  # La colonne existe déjà
+            
+            try:
+                cursor.execute("ALTER TABLE channels ADD COLUMN tag TEXT")
+            except sqlite3.OperationalError:
+                pass  # La colonne existe déjà
 
             # Table des publications avec colonnes pour les réactions et boutons URL
             cursor.execute('''
@@ -81,15 +96,16 @@ class DatabaseManager:
                 )
             ''')
 
-            # Vérifier si la colonne reactions existe déjà
-            cursor.execute("PRAGMA table_info(posts)")
-            columns = cursor.fetchall()
-            column_names = [column[1] for column in columns]
-            
-            # Ajouter la colonne reactions si elle n'existe pas
-            if 'reactions' not in column_names:
-                cursor.execute("ALTER TABLE posts ADD COLUMN reactions TEXT")
-                logger.info("Colonne 'reactions' ajoutée à la table posts")
+            # Ajout de la table channel_thumbnails
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS channel_thumbnails (
+                    channel_username TEXT NOT NULL,
+                    user_id INTEGER NOT NULL,
+                    thumbnail_file_id TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (channel_username, user_id)
+                )
+            ''')
 
             self.connection.commit()
             return True
@@ -130,70 +146,213 @@ class DatabaseManager:
         except sqlite3.Error:
             return False
 
-    def add_channel(self, name: str, username: str) -> bool:
+    def add_channel(self, name: str, username: str, user_id: int) -> int:
         """Ajoute un nouveau canal à la base de données"""
         try:
             cursor = self.connection.cursor()
             cursor.execute(
-                "INSERT INTO channels (name, username) VALUES (?, ?)",
-                (name, username)
+                "INSERT INTO channels (name, username, user_id) VALUES (?, ?, ?)",
+                (name, username, user_id)
             )
             self.connection.commit()
-            return True
+            return cursor.lastrowid
         except sqlite3.Error as e:
             logger.error(f"Erreur lors de l'ajout du canal: {e}")
             raise DatabaseError(f"Erreur lors de l'ajout du canal: {e}")
 
-    def get_channel(self, username: str) -> Optional[Dict]:
+    def get_channel(self, channel_id: int) -> Optional[Dict[str, Any]]:
         """Récupère les informations d'un canal"""
         try:
             cursor = self.connection.cursor()
-            cursor.execute(
-                "SELECT id, name, username FROM channels WHERE username = ?",
-                (username,)
-            )
-            result = cursor.fetchone()
-            if result:
+            cursor.execute("SELECT * FROM channels WHERE id = ?", (channel_id,))
+            row = cursor.fetchone()
+            if row:
                 return {
-                    "id": result[0],
-                    "name": result[1],
-                    "username": result[2]
+                    "id": row[0],
+                    "name": row[1],
+                    "username": row[2],
+                    "user_id": row[3],
+                    "created_at": row[4]
                 }
-            logger.info(f"Aucun canal trouvé avec l'username '{username}'")
             return None
         except sqlite3.Error as e:
             logger.error(f"Erreur lors de la récupération du canal: {e}")
             raise DatabaseError(f"Erreur lors de la récupération du canal: {e}")
 
-    def list_channels(self) -> List[tuple]:
-        """Liste tous les canaux"""
+    def list_channels(self, user_id: int) -> List[Dict[str, Any]]:
+        """Liste tous les canaux d'un utilisateur"""
         try:
             cursor = self.connection.cursor()
-            cursor.execute("SELECT id, name, username FROM channels")
-            results = cursor.fetchall()
-            logger.info(f"Récupération de {len(results)} canaux réussie")
-            return results
+            # Vérifier d'abord si la colonne created_at existe
+            cursor.execute("PRAGMA table_info(channels)")
+            columns = [col[1] for col in cursor.fetchall()]
+            
+            if 'created_at' in columns:
+                cursor.execute(
+                    "SELECT id, name, username, user_id, created_at FROM channels WHERE user_id = ? ORDER BY name",
+                    (user_id,)
+                )
+                return [
+                    {
+                        "id": row[0],
+                        "name": row[1],
+                        "username": row[2],
+                        "user_id": row[3],
+                        "created_at": row[4]
+                    }
+                    for row in cursor.fetchall()
+                ]
+            else:
+                # Version sans created_at
+                cursor.execute(
+                    "SELECT id, name, username, user_id FROM channels WHERE user_id = ? ORDER BY name",
+                    (user_id,)
+                )
+                return [
+                    {
+                        "id": row[0],
+                        "name": row[1],
+                        "username": row[2],
+                        "user_id": row[3]
+                    }
+                    for row in cursor.fetchall()
+                ]
         except sqlite3.Error as e:
             logger.error(f"Erreur lors de la liste des canaux: {e}")
             raise DatabaseError(f"Erreur lors de la liste des canaux: {e}")
 
-    def add_post(self, channel_id: int, post_type: str, content: str,
-                 caption: Optional[str] = None, buttons: Optional[List[Dict]] = None,
-                 reactions: Optional[List[str]] = None, scheduled_time: Optional[str] = None) -> Optional[int]:
+    def get_channel_by_username(self, username: str, user_id: int) -> Optional[Dict[str, Any]]:
+        """Récupère un canal par son username pour un utilisateur spécifique"""
+        try:
+            cursor = self.connection.cursor()
+            # Essayer avec le username tel quel ET avec/sans @
+            clean_username = username.lstrip('@')
+            with_at = f"@{clean_username}" if not username.startswith('@') else username
+            
+            # Vérifier d'abord si la colonne created_at existe
+            cursor.execute("PRAGMA table_info(channels)")
+            columns = [col[1] for col in cursor.fetchall()]
+            
+            if 'created_at' in columns:
+                # Essayer d'abord avec le format exact
+                cursor.execute(
+                    "SELECT id, name, username, user_id, created_at FROM channels WHERE username = ? AND user_id = ?",
+                    (username, user_id)
+                )
+                row = cursor.fetchone()
+                
+                # Si pas trouvé, essayer sans @
+                if not row:
+                    cursor.execute(
+                        "SELECT id, name, username, user_id, created_at FROM channels WHERE username = ? AND user_id = ?",
+                        (clean_username, user_id)
+                    )
+                    row = cursor.fetchone()
+                
+                # Si pas trouvé, essayer avec @
+                if not row:
+                    cursor.execute(
+                        "SELECT id, name, username, user_id, created_at FROM channels WHERE username = ? AND user_id = ?",
+                        (with_at, user_id)
+                    )
+                    row = cursor.fetchone()
+                
+                if row:
+                    return {
+                        "id": row[0],
+                        "name": row[1],
+                        "username": row[2],
+                        "user_id": row[3],
+                        "created_at": row[4]
+                    }
+            else:
+                # Version sans created_at - même logique
+                cursor.execute(
+                    "SELECT id, name, username, user_id FROM channels WHERE username = ? AND user_id = ?",
+                    (username, user_id)
+                )
+                row = cursor.fetchone()
+                
+                if not row:
+                    cursor.execute(
+                        "SELECT id, name, username, user_id FROM channels WHERE username = ? AND user_id = ?",
+                        (clean_username, user_id)
+                    )
+                    row = cursor.fetchone()
+                
+                if not row:
+                    cursor.execute(
+                        "SELECT id, name, username, user_id FROM channels WHERE username = ? AND user_id = ?",
+                        (with_at, user_id)
+                    )
+                    row = cursor.fetchone()
+                
+                if row:
+                    return {
+                        "id": row[0],
+                        "name": row[1],
+                        "username": row[2],
+                        "user_id": row[3]
+                    }
+            return None
+        except sqlite3.Error as e:
+            logger.error(f"Erreur lors de la récupération du canal par username: {e}")
+            raise DatabaseError(f"Erreur lors de la récupération du canal par username: {e}")
+
+    def set_channel_tag(self, username: str, user_id: int, tag: str) -> bool:
+        """Définit le tag d'un canal"""
+        try:
+            cursor = self.connection.cursor()
+            # Nettoyer le username (enlever @ si présent)
+            clean_username = username.lstrip('@')
+            # Essayer sans @
+            cursor.execute(
+                "UPDATE channels SET tag = ? WHERE username = ? AND user_id = ?",
+                (tag, clean_username, user_id)
+            )
+            if cursor.rowcount == 0:
+                # Essayer avec @
+                with_at = f"@{clean_username}"
+                cursor.execute(
+                    "UPDATE channels SET tag = ? WHERE username = ? AND user_id = ?",
+                    (tag, with_at, user_id)
+                )
+            self.connection.commit()
+            return cursor.rowcount > 0
+        except sqlite3.Error as e:
+            logger.error(f"Erreur lors de la mise à jour du tag: {e}")
+            return False
+
+    def get_channel_tag(self, username: str, user_id: int) -> Optional[str]:
+        """Récupère le tag d'un canal"""
+        try:
+            cursor = self.connection.cursor()
+            # Nettoyer le username (enlever @ si présent)
+            clean_username = username.lstrip('@')
+            
+            cursor.execute(
+                "SELECT tag FROM channels WHERE username = ? AND user_id = ?",
+                (clean_username, user_id)
+            )
+            row = cursor.fetchone()
+            return row[0] if row and row[0] else None
+        except sqlite3.Error as e:
+            logger.error(f"Erreur lors de la récupération du tag: {e}")
+            return None
+
+    def add_post(self, channel_id: int, post_type: str, content: str, 
+                caption: Optional[str] = None, buttons: Optional[str] = None,
+                reactions: Optional[str] = None, scheduled_time: Optional[str] = None) -> int:
         """Ajoute une nouvelle publication"""
         try:
             cursor = self.connection.cursor()
-            # Convertir les boutons et réactions en JSON
-            buttons_json = json.dumps(buttons) if buttons else None
-            reactions_json = json.dumps(reactions) if reactions else None
-            
             cursor.execute(
                 """
                 INSERT INTO posts 
                 (channel_id, post_type, content, caption, buttons, reactions, scheduled_time)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                (channel_id, post_type, content, caption, buttons_json, reactions_json, scheduled_time)
+                (channel_id, post_type, content, caption, buttons, reactions, scheduled_time)
             )
             self.connection.commit()
             return cursor.lastrowid
@@ -201,136 +360,79 @@ class DatabaseManager:
             logger.error(f"Erreur lors de l'ajout de la publication: {e}")
             raise DatabaseError(f"Erreur lors de l'ajout de la publication: {e}")
 
-    def get_scheduled_post(self, post_id: int) -> Optional[Dict]:
-        """Récupère une publication planifiée"""
+    def get_post(self, post_id: int) -> Optional[Dict[str, Any]]:
+        """Récupère les informations d'une publication"""
         try:
             cursor = self.connection.cursor()
-            cursor.execute(
-                """
-                SELECT id, channel_id, post_type, content, caption, buttons, reactions, scheduled_time
-                FROM posts
-                WHERE id = ? AND status = 'pending'
-                """,
-                (post_id,)
-            )
-            result = cursor.fetchone()
-            if result:
+            cursor.execute("SELECT * FROM posts WHERE id = ?", (post_id,))
+            row = cursor.fetchone()
+            if row:
                 return {
-                    "id": result[0],
-                    "channel_id": result[1],
-                    "post_type": result[2],
-                    "content": result[3],
-                    "caption": result[4],
-                    "buttons": json.loads(result[5]) if result[5] else None,
-                    "reactions": json.loads(result[6]) if result[6] else None,
-                    "scheduled_time": result[7]
+                    "id": row[0],
+                    "channel_id": row[1],
+                    "post_type": row[2],
+                    "content": row[3],
+                    "caption": row[4],
+                    "buttons": row[5],
+                    "reactions": row[6],
+                    "scheduled_time": row[7],
+                    "status": row[8],
+                    "created_at": row[9]
                 }
             return None
         except sqlite3.Error as e:
             logger.error(f"Erreur lors de la récupération de la publication: {e}")
             raise DatabaseError(f"Erreur lors de la récupération de la publication: {e}")
 
-    def update_post_schedule(self, post_id: int, new_datetime: datetime) -> bool:
-        """Met à jour l'horaire d'une publication"""
+    def update_post_status(self, post_id: int, status: str) -> bool:
+        """Met à jour le statut d'une publication"""
         try:
             cursor = self.connection.cursor()
             cursor.execute(
-                "UPDATE posts SET scheduled_time = ? WHERE id = ?",
-                (new_datetime, post_id)
+                "UPDATE posts SET status = ? WHERE id = ?",
+                (status, post_id)
             )
             self.connection.commit()
             return cursor.rowcount > 0
         except sqlite3.Error as e:
-            logger.error(f"Erreur lors de la mise à jour de l'horaire: {e}")
-            raise DatabaseError(f"Erreur lors de la mise à jour de l'horaire: {e}")
+            logger.error(f"Erreur lors de la mise à jour du statut: {e}")
+            raise DatabaseError(f"Erreur lors de la mise à jour du statut: {e}")
 
-    def update_post_reactions(self, post_id: int, reactions: List[str]) -> bool:
-        """Met à jour les réactions d'une publication"""
-        try:
-            cursor = self.connection.cursor()
-            reactions_json = json.dumps(reactions) if reactions else None
-            cursor.execute(
-                "UPDATE posts SET reactions = ? WHERE id = ?",
-                (reactions_json, post_id)
-            )
-            self.connection.commit()
-            return cursor.rowcount > 0
-        except sqlite3.Error as e:
-            logger.error(f"Erreur lors de la mise à jour des réactions: {e}")
-            raise DatabaseError(f"Erreur lors de la mise à jour des réactions: {e}")
-
-    def update_post_buttons(self, post_id: int, buttons: List[Dict]) -> bool:
-        """Met à jour les boutons URL d'une publication"""
-        try:
-            cursor = self.connection.cursor()
-            buttons_json = json.dumps(buttons) if buttons else None
-            cursor.execute(
-                "UPDATE posts SET buttons = ? WHERE id = ?",
-                (buttons_json, post_id)
-            )
-            self.connection.commit()
-            return cursor.rowcount > 0
-        except sqlite3.Error as e:
-            logger.error(f"Erreur lors de la mise à jour des boutons URL: {e}")
-            raise DatabaseError(f"Erreur lors de la mise à jour des boutons URL: {e}")
-
-    def delete_post(self, post_id: int) -> bool:
-        """Supprime une publication"""
-        try:
-            cursor = self.connection.cursor()
-            cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
-            self.connection.commit()
-            return cursor.rowcount > 0
-        except sqlite3.Error as e:
-            logger.error(f"Erreur lors de la suppression de la publication: {e}")
-            raise DatabaseError(f"Erreur lors de la suppression de la publication: {e}")
-
-    def get_future_scheduled_posts(self) -> List[Dict]:
-        """Récupère toutes les publications planifiées futures"""
+    def get_pending_posts(self) -> List[Dict[str, Any]]:
+        """Récupère toutes les publications en attente"""
         try:
             cursor = self.connection.cursor()
             cursor.execute(
                 """
-                SELECT id, channel_id, post_type, content, caption, buttons, reactions, scheduled_time
-                FROM posts
-                WHERE status = 'pending' AND scheduled_time > datetime('now')
-                ORDER BY scheduled_time ASC
+                SELECT p.*, c.username 
+                FROM posts p 
+                JOIN channels c ON p.channel_id = c.id 
+                WHERE p.status = 'pending'
+                ORDER BY p.scheduled_time
                 """
             )
-            results = cursor.fetchall()
-            posts = []
-            for result in results:
-                posts.append({
-                    "id": result[0],
-                    "channel_id": result[1],
-                    "post_type": result[2],
-                    "content": result[3],
-                    "caption": result[4],
-                    "buttons": json.loads(result[5]) if result[5] else None,
-                    "reactions": json.loads(result[6]) if result[6] else None,
-                    "scheduled_time": result[7]
-                })
-            return posts
+            return [
+                {
+                    "id": row[0],
+                    "channel_id": row[1],
+                    "post_type": row[2],
+                    "content": row[3],
+                    "caption": row[4],
+                    "buttons": row[5],
+                    "reactions": row[6],
+                    "scheduled_time": row[7],
+                    "status": row[8],
+                    "created_at": row[9],
+                    "channel_username": row[10]
+                }
+                for row in cursor.fetchall()
+            ]
         except sqlite3.Error as e:
-            logger.error(f"Erreur lors de la récupération des publications planifiées: {e}")
-            raise DatabaseError(f"Erreur lors de la récupération des publications planifiées: {e}")
+            logger.error(f"Erreur lors de la récupération des publications en attente: {e}")
+            raise DatabaseError(f"Erreur lors de la récupération des publications en attente: {e}")
 
-    def get_user_timezone(self, user_id: int) -> Optional[str]:
-        """Récupère le fuseau horaire d'un utilisateur"""
-        try:
-            cursor = self.connection.cursor()
-            cursor.execute(
-                "SELECT timezone FROM user_timezones WHERE user_id = ?",
-                (user_id,)
-            )
-            result = cursor.fetchone()
-            return result[0] if result else None
-        except sqlite3.Error as e:
-            logger.error(f"Erreur lors de la récupération du fuseau horaire: {e}")
-            raise DatabaseError(f"Erreur lors de la récupération du fuseau horaire: {e}")
-
-    def save_user_timezone(self, user_id: int, timezone: str) -> bool:
-        """Enregistre le fuseau horaire d'un utilisateur"""
+    def set_user_timezone(self, user_id: int, timezone: str) -> bool:
+        """Définit le fuseau horaire d'un utilisateur"""
         try:
             cursor = self.connection.cursor()
             cursor.execute(
@@ -346,10 +448,122 @@ class DatabaseManager:
             self.connection.commit()
             return True
         except sqlite3.Error as e:
-            logger.error(f"Erreur lors de l'enregistrement du fuseau horaire: {e}")
-            raise DatabaseError(f"Erreur lors de l'enregistrement du fuseau horaire: {e}")
+            logger.error(f"Erreur lors de la mise à jour du fuseau horaire: {e}")
+            raise DatabaseError(f"Erreur lors de la mise à jour du fuseau horaire: {e}")
+
+    def get_user_timezone(self, user_id: int) -> Optional[str]:
+        """Récupère le fuseau horaire d'un utilisateur"""
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                "SELECT timezone FROM user_timezones WHERE user_id = ?",
+                (user_id,)
+            )
+            row = cursor.fetchone()
+            return row[0] if row else None
+        except sqlite3.Error as e:
+            logger.error(f"Erreur lors de la récupération du fuseau horaire: {e}")
+            raise DatabaseError(f"Erreur lors de la récupération du fuseau horaire: {e}")
 
     def __del__(self):
         """Ferme la connexion à la base de données lors de la destruction de l'objet"""
         if self.connection:
             self.connection.close()
+
+    def close(self):
+        """Ferme la connexion à la base de données"""
+        if self.connection:
+            self.connection.close()
+            self.connection = None
+
+    def get_scheduled_posts(self, user_id: int) -> List[Dict[str, Any]]:
+        """Récupère les publications planifiées d'un utilisateur"""
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                SELECT p.*, c.username 
+                FROM posts p 
+                JOIN channels c ON p.channel_id = c.id 
+                WHERE p.status = 'pending' AND c.user_id = ? AND p.scheduled_time IS NOT NULL
+                ORDER BY p.scheduled_time
+                """,
+                (user_id,)
+            )
+            return [
+                {
+                    "id": row[0],
+                    "channel_id": row[1],
+                    "post_type": row[2],
+                    "content": row[3],
+                    "caption": row[4],
+                    "buttons": row[5],
+                    "reactions": row[6],
+                    "scheduled_time": row[7],
+                    "status": row[8],
+                    "created_at": row[9],
+                    "channel_username": row[10]
+                }
+                for row in cursor.fetchall()
+            ]
+        except sqlite3.Error as e:
+            logger.error(f"Erreur lors de la récupération des publications planifiées: {e}")
+            raise DatabaseError(f"Erreur lors de la récupération des publications planifiées: {e}")
+
+    def save_thumbnail(self, channel_username: str, user_id: int, thumbnail_file_id: str) -> bool:
+        """Enregistre un thumbnail pour un canal"""
+        try:
+            # Nettoyer le nom d'utilisateur (enlever @ si présent) pour cohérence
+            clean_username = channel_username.lstrip('@')
+            
+            cursor = self.connection.cursor()
+            cursor.execute('''
+                INSERT OR REPLACE INTO channel_thumbnails 
+                (channel_username, user_id, thumbnail_file_id) 
+                VALUES (?, ?, ?)
+            ''', (clean_username, user_id, thumbnail_file_id))
+            self.connection.commit()
+            
+            logger.info(f"Thumbnail sauvegardé pour canal '{clean_username}' (original: '{channel_username}'), user_id: {user_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Erreur lors de l'enregistrement du thumbnail: {e}")
+            return False
+
+    def get_thumbnail(self, channel_username: str, user_id: int) -> Optional[str]:
+        """Récupère le thumbnail enregistré pour un canal"""
+        try:
+            # Nettoyer le nom d'utilisateur (enlever @ si présent) pour cohérence
+            clean_username = channel_username.lstrip('@')
+            
+            cursor = self.connection.cursor()
+            cursor.execute('''
+                SELECT thumbnail_file_id FROM channel_thumbnails 
+                WHERE channel_username = ? AND user_id = ?
+            ''', (clean_username, user_id))
+            result = cursor.fetchone()
+            
+            logger.info(f"Recherche thumbnail pour canal '{clean_username}' (original: '{channel_username}'), user_id: {user_id}, résultat: {result[0] if result else 'None'}")
+            return result[0] if result else None
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération du thumbnail: {e}")
+            return None
+
+    def delete_thumbnail(self, channel_username: str, user_id: int) -> bool:
+        """Supprime le thumbnail d'un canal"""
+        try:
+            # Nettoyer le nom d'utilisateur (enlever @ si présent) pour cohérence
+            clean_username = channel_username.lstrip('@')
+            
+            cursor = self.connection.cursor()
+            cursor.execute('''
+                DELETE FROM channel_thumbnails 
+                WHERE channel_username = ? AND user_id = ?
+            ''', (clean_username, user_id))
+            self.connection.commit()
+            
+            logger.info(f"Thumbnail supprimé pour canal '{clean_username}' (original: '{channel_username}'), user_id: {user_id}")
+            return cursor.rowcount > 0
+        except Exception as e:
+            logger.error(f"Erreur lors de la suppression du thumbnail: {e}")
+            return False

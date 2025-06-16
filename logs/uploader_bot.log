@@ -1,0 +1,7 @@
+2025-05-11 12:52:23,419 - UploaderBot - INFO - Migration 1 appliquée avec succès
+2025-05-11 12:52:23,420 - UploaderBot - INFO - Migration 2 appliquée avec succès
+2025-05-11 12:52:23,420 - UploaderBot - INFO - Migration 3 appliquée avec succès
+2025-05-11 12:52:23,421 - UploaderBot - INFO - Migration 4 appliquée avec succès
+2025-05-11 12:52:23,421 - UploaderBot - INFO - Migration 5 appliquée avec succès
+2025-05-11 12:52:23,422 - UploaderBot - INFO - Migration 6 appliquée avec succès
+2025-05-11 12:52:23,423 - UploaderBot - ERROR - Erreur lors de l'initialisation de la base de données : duplicate column name: user_id

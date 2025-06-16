@@ -11,27 +11,78 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Chemins des dossiers
-BASE_DIR = Path(__file__).parent.parent
-DB_PATH = BASE_DIR / "data" / "bot.db"
-DOWNLOAD_FOLDER = BASE_DIR / "downloads"
-BACKUP_FOLDER = BASE_DIR / "backups"
-DATA_FOLDER = BASE_DIR / "data"
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
+LOGS_DIR = BASE_DIR / "logs"
+TEMP_DIR = BASE_DIR / "temp"
 
-# Création des dossiers si nécessaire
-for folder in [DOWNLOAD_FOLDER, BACKUP_FOLDER, DATA_FOLDER]:
-    folder.mkdir(parents=True, exist_ok=True)
-
-# Configuration du bot
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-if not BOT_TOKEN:
-    raise ValueError("BOT_TOKEN n'est pas défini dans les variables d'environnement")
+# Création des dossiers s'ils n'existent pas
+for directory in [DATA_DIR, LOGS_DIR, TEMP_DIR]:
+    directory.mkdir(parents=True, exist_ok=True)
 
 # Configuration de la base de données
-DB_CONFIG = {
-    "path": str(DB_PATH),
+db_config = {
+    "path": str(DATA_DIR / "bot.db"),
     "timeout": 30,
     "check_same_thread": False
 }
+
+# Configuration du bot
+bot_config = {
+    "token": os.getenv("TELEGRAM_BOT_TOKEN", ""),
+    "api_id": int(os.getenv("TELEGRAM_API_ID", "0")),
+    "api_hash": os.getenv("TELEGRAM_API_HASH", ""),
+    "session_name": "bot_session",
+    "admin_ids": [int(id) for id in os.getenv("ADMIN_IDS", "").split(",") if id],
+    "max_file_size": 2000 * 1024 * 1024,  # 2GB en bytes
+    "allowed_extensions": {
+        "image": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+        "video": [".mp4", ".avi", ".mov", ".mkv", ".webm"],
+        "document": [".pdf", ".doc", ".docx", ".txt", ".zip", ".rar"]
+    }
+}
+
+# Configuration des logs
+logging_config = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+            "level": "INFO"
+        },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "default",
+            "filename": str(LOGS_DIR / "bot.log"),
+            "maxBytes": 10485760,  # 10MB
+            "backupCount": 5,
+            "level": "DEBUG"
+        }
+    },
+    "root": {
+        "level": "INFO",
+        "handlers": ["console", "file"]
+    }
+}
+
+# États de la conversation
+class ConversationStates:
+    MAIN_MENU = 0
+    CHANNEL_SELECTION = 1
+    POST_TYPE = 2
+    POST_CONTENT = 3
+    POST_ACTIONS = 4
+    SCHEDULE_TIME = 5
+    REACTIONS = 6
+    URL_BUTTONS = 7
+    CONFIRMATION = 8
 
 # Configuration des limites
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 Mo
@@ -77,15 +128,15 @@ BACKUP_INTERVAL = 86400  # 24 heures
 # Classe pour gérer les paramètres
 class Settings:
     def __init__(self):
-        self.bot_token = BOT_TOKEN
-        self.db_config = DB_CONFIG
-        self.max_file_size = MAX_FILE_SIZE
+        self.bot_token = bot_config["token"]
+        self.db_config = db_config
+        self.max_file_size = bot_config["max_file_size"]
         self.max_storage_size = MAX_STORAGE_SIZE
         self.max_backup_files = MAX_BACKUP_FILES
         self.error_messages = ERROR_MESSAGES
         self.default_timezone = DEFAULT_TIMEZONE
         self.supported_timezones = SUPPORTED_TIMEZONES
-        self.allowed_file_types = ALLOWED_FILE_TYPES
+        self.allowed_file_types = bot_config["allowed_extensions"]
         self.default_reactions = DEFAULT_REACTIONS
         self.max_buttons_per_row = MAX_BUTTONS_PER_ROW
         self.max_buttons_total = MAX_BUTTONS_TOTAL
